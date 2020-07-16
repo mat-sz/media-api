@@ -76,6 +76,10 @@ export class YouTube implements Service {
       type: ContentType.VIDEO,
       id: id,
       title: playerResponse.videoDetails.title,
+      author: {
+        id: playerResponse.videoDetails.channelId,
+        name: playerResponse.videoDetails.author,
+      },
     };
   }
 
