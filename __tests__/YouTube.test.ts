@@ -11,5 +11,8 @@ describe('YouTube', () => {
 
     expect(content.author?.id).toBe('UC4QobU6STFB0P71PMvOGN5A');
     expect(content.author?.name).toBe('jawed');
+
+    expect(content.streams?.length).toBeGreaterThan(0);
+    expect(content.streams?.[0].url).toContain('googlevideo.com');
   });
 });

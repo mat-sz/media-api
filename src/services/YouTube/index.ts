@@ -1,7 +1,32 @@
 import fetch, { RequestInit, Response } from 'node-fetch';
 
-import { Content, ContentType } from '../../types/Content';
+import { Content, ContentType, ContentStream } from '../../types/Content';
 import { Service } from '../../types/Service';
+
+interface PlayerRange {
+  start: string;
+  end: string;
+}
+
+interface PlayerFormat {
+  itag: number;
+  url: string;
+  mimeType: string;
+  bitrate: number;
+  initRange?: PlayerRange;
+  indexRange?: PlayerRange;
+  lastModified: string;
+  contentLength: string;
+  quality: string;
+  projectionType?: string;
+  averageBitrate: number;
+  audioQuality?: string;
+  approxDurationMs?: string;
+  audioSampleRate?: string;
+  audioChannels?: string;
+  fps?: number;
+  qualityLabel?: string;
+}
 
 interface PlayerResponse {
   responseContext?: any;
@@ -24,8 +49,8 @@ interface PlayerResponse {
   };
   streamingData?: {
     expiresInSeconds?: string;
-    formats?: {}[];
-    adaptiveFormats?: {}[];
+    formats?: PlayerFormat[];
+    adaptiveFormats?: PlayerFormat[];
   };
   playerAds?: any[];
   playbackTracking?: any;
@@ -83,6 +108,15 @@ export class YouTube implements Service {
       throw new Error("Video ID doesn't match.");
     }
 
+    const streams: ContentStream[] = [];
+    if (playerResponse.streamingData?.adaptiveFormats) {
+      for (let format of playerResponse.streamingData?.adaptiveFormats) {
+        streams.push({
+          url: format.url,
+        });
+      }
+    }
+
     return {
       type: ContentType.VIDEO,
       id: id,
@@ -91,6 +125,7 @@ export class YouTube implements Service {
         id: playerResponse.videoDetails.channelId,
         name: playerResponse.videoDetails.author,
       },
+      streams,
     };
   }
 
