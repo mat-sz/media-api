@@ -1,7 +1,7 @@
 import fetch, { RequestInit, Response } from 'node-fetch';
 
-import { Content, ContentType } from '../types/Content';
-import { Service } from '../types/Service';
+import { Content, ContentType } from '../../types/Content';
+import { Service } from '../../types/Service';
 
 interface PlayerResponse {
   responseContext?: any;
@@ -21,6 +21,11 @@ interface PlayerResponse {
         };
       };
     };
+  };
+  streamingData?: {
+    expiresInSeconds?: string;
+    formats?: {}[];
+    adaptiveFormats?: {}[];
   };
   playerAds?: any[];
   playbackTracking?: any;
@@ -57,6 +62,12 @@ interface PlayerResponse {
   adPlacements?: any[];
 }
 
+interface PlayerConfig {
+  args?: {
+    player_response?: string;
+  };
+}
+
 export class YouTube implements Service {
   async fetchContent(id: string): Promise<Content> {
     const res = await this.fetch(
@@ -90,13 +101,13 @@ export class YouTube implements Service {
 
     init.headers = {
       accept:
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       'accept-charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
       'accept-encoding': 'gzip, deflate, br',
       'accept-language': 'en-us,en;q=0.5',
       'cache-control': 'max-age=0',
       'user-agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
       'x-youtube-client-name': '1',
     };
 
@@ -115,15 +126,21 @@ export class YouTube implements Service {
   }
 
   private scrapeVideoPage(body: string): PlayerResponse {
-    const regex = new RegExp(
-      /window\["ytInitialPlayerResponse"\]\s*=\s*(.*?);\n/
-    );
+    const regex = new RegExp(/ytplayer.config\s*=\s*(.*?)};/);
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Video unavailable.');
     }
 
-    const playerResponse = JSON.parse(match[1]) as PlayerResponse;
+    const playerConfig = JSON.parse(match[1] + '}') as PlayerConfig;
+
+    if (!playerConfig.args?.player_response) {
+      throw new Error('Video unavailable.');
+    }
+
+    const playerResponse = JSON.parse(
+      playerConfig.args?.player_response
+    ) as PlayerResponse;
 
     if (playerResponse.playabilityStatus?.status !== 'OK') {
       const reason =
