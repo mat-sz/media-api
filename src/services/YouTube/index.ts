@@ -1,6 +1,11 @@
 import fetch, { RequestInit, Response } from 'node-fetch';
 
-import { Content, ContentType, ContentStream } from '../../types/Content';
+import {
+  Content,
+  ContentType,
+  ContentStream,
+  ContentThumbnail,
+} from '../../types/Content';
 import { Service } from '../../types/Service';
 
 interface PlayerRange {
@@ -65,7 +70,7 @@ interface PlayerResponse {
     shortDescription?: string;
     isCrawlable?: boolean;
     thumbnail?: {
-      thumbnails?: any[];
+      thumbnails?: ContentThumbnail[];
     };
     useCipher?: boolean;
     averageRating?: number;
@@ -125,6 +130,7 @@ export class YouTube implements Service {
         id: playerResponse.videoDetails.channelId,
         name: playerResponse.videoDetails.author,
       },
+      thumbnails: playerResponse.videoDetails.thumbnail?.thumbnails,
       streams,
     };
   }

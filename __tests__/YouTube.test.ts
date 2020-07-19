@@ -14,5 +14,10 @@ describe('YouTube', () => {
 
     expect(content.streams?.length).toBeGreaterThan(0);
     expect(content.streams?.[0].url).toContain('googlevideo.com');
+
+    expect(content.thumbnails?.length).toBeGreaterThan(0);
+    expect(content.thumbnails?.[0].url).toContain('ytimg.com');
+    expect(content.thumbnails?.[0].width).toBeGreaterThan(0);
+    expect(content.thumbnails?.[0].height).toBeGreaterThan(0);
   });
 });
