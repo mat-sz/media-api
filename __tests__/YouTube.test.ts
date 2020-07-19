@@ -27,5 +27,9 @@ describe('YouTube', () => {
     expect(content.thumbnails?.[0].url).toContain('ytimg.com');
     expect(content.thumbnails?.[0].width).toBeGreaterThan(0);
     expect(content.thumbnails?.[0].height).toBeGreaterThan(0);
+
+    expect(content.statistics?.plays).toBeGreaterThan(100000000);
+    expect(content.statistics?.likes).toBeGreaterThan(3500000);
+    expect(content.statistics?.dislikes).toBeGreaterThan(100000);
   });
 });

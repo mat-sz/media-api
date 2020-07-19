@@ -5,8 +5,11 @@ import {
   ContentType,
   ContentStream,
   ContentThumbnail,
+  ContentStatistics,
 } from '../../types/Content';
 import { Service } from '../../types/Service';
+import { parse } from 'path';
+import { stat } from 'fs';
 
 interface PlayerRange {
   start: string;
@@ -106,7 +109,32 @@ interface InitialData {
         results?: {
           contents?: [
             {
-              videoPrimaryInfoRenderer?: {};
+              videoPrimaryInfoRenderer?: {
+                title?: {
+                  runs?: {
+                    text?: string;
+                  }[];
+                };
+                viewCount?: {
+                  videoViewCountRenderer?: {
+                    viewCount?: {
+                      simpleText?: string;
+                    };
+                    shortViewCount?: {
+                      simpleText?: string;
+                    };
+                  };
+                };
+                sentimentBar?: {
+                  sentimentBarRenderer?: {
+                    percentIfIndifferent?: number;
+                    percentIfLiked?: number;
+                    percentIfDisliked?: number;
+                    likeStatus?: string;
+                    tooltip?: string;
+                  };
+                };
+              };
             },
             {
               videoSecondaryInfoRenderer?: {
@@ -144,36 +172,63 @@ export class YouTube implements Service {
     const playerResponse = this.scrapePlayerResponse(body);
     const initialData = this.scrapeInitialData(body);
 
-    if (playerResponse.videoDetails.videoId !== id) {
+    const { videoDetails, streamingData } = playerResponse;
+
+    if (videoDetails.videoId !== id) {
       throw new Error("Video ID doesn't match.");
     }
 
     const streams: ContentStream[] = [];
-    if (playerResponse.streamingData?.adaptiveFormats) {
-      for (let format of playerResponse.streamingData?.adaptiveFormats) {
+    if (streamingData?.adaptiveFormats) {
+      for (let format of streamingData?.adaptiveFormats) {
         streams.push({
           url: format.url,
         });
       }
     }
 
+    const primaryInfo =
+      initialData.contents?.twoColumnWatchNextResults?.results?.results
+        ?.contents?.[0].videoPrimaryInfoRenderer;
+    const sentimentBarTooltip =
+      primaryInfo?.sentimentBar?.sentimentBarRenderer?.tooltip;
+    const viewCount =
+      primaryInfo?.viewCount?.videoViewCountRenderer?.viewCount?.simpleText;
+
+    let statistics: ContentStatistics | undefined = undefined;
+    if (viewCount) {
+      statistics = {
+        plays: parseInt(viewCount.replace(/\D/g, '')),
+      };
+      if (sentimentBarTooltip) {
+        const split = sentimentBarTooltip
+          ?.split(' / ')
+          .map(str => str.replace(/\D/g, ''));
+        if (split.length >= 2) {
+          statistics.likes = parseInt(split[0]);
+          statistics.dislikes = parseInt(split[1]);
+        }
+      }
+    }
+
     return {
       type: ContentType.VIDEO,
       id: id,
-      title: playerResponse.videoDetails.title,
+      title: videoDetails.title,
       author: {
-        id: playerResponse.videoDetails.channelId,
-        name: playerResponse.videoDetails.author,
+        id: videoDetails.channelId,
+        name: videoDetails.author,
         thumbnails:
           initialData.contents?.twoColumnWatchNextResults?.results?.results
             ?.contents?.[1].videoSecondaryInfoRenderer?.owner
             ?.videoOwnerRenderer?.thumbnail?.thumbnails,
       },
-      thumbnails: playerResponse.videoDetails.thumbnail?.thumbnails,
+      thumbnails: videoDetails.thumbnail?.thumbnails,
       streams,
-      duration: parseInt(playerResponse.videoDetails.lengthSeconds),
-      keywords: playerResponse.videoDetails.keywords,
-      description: playerResponse.videoDetails.shortDescription,
+      statistics,
+      duration: parseInt(videoDetails.lengthSeconds),
+      keywords: videoDetails.keywords,
+      description: videoDetails.shortDescription,
     };
   }
 

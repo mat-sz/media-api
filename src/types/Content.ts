@@ -6,9 +6,9 @@ export enum ContentType {
 }
 
 export interface ContentStatistics {
-  plays: number;
-  likes: number;
-  dislikes: number;
+  plays?: number;
+  likes?: number;
+  dislikes?: number;
 }
 
 export interface ContentThumbnail {
