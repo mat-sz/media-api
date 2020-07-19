@@ -5,6 +5,11 @@ export enum ContentType {
   IMAGE = 'image',
 }
 
+export enum ContentStreamType {
+  AUDIO = 'audio',
+  VIDEO = 'video',
+}
+
 export interface ContentStatistics {
   plays?: number;
   likes?: number;
@@ -19,6 +24,12 @@ export interface ContentThumbnail {
 
 export interface ContentStream {
   url: string;
+  type: ContentStreamType;
+  width?: number;
+  height?: number;
+  label?: string;
+  fps?: number;
+  bitrate?: number;
 }
 
 export interface ContentAuthor {

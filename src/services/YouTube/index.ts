@@ -6,10 +6,12 @@ import {
   ContentStream,
   ContentThumbnail,
   ContentStatistics,
+  ContentStreamType,
 } from '../../types/Content';
 import { Service } from '../../types/Service';
 import { parse } from 'path';
 import { stat } from 'fs';
+import { formats } from './formats';
 
 interface PlayerRange {
   start: string;
@@ -181,8 +183,16 @@ export class YouTube implements Service {
     const streams: ContentStream[] = [];
     if (streamingData?.adaptiveFormats) {
       for (let format of streamingData?.adaptiveFormats) {
+        const itag = format.itag.toString();
+        const fmt = itag in formats ? formats[itag] : undefined;
         streams.push({
           url: format.url,
+          type: format.fps ? ContentStreamType.VIDEO : ContentStreamType.VIDEO,
+          bitrate: format.bitrate,
+          fps: format.fps,
+          label: format.qualityLabel,
+          height: formats[format.itag]?.height,
+          width: formats[format.itag]?.width,
         });
       }
     }
