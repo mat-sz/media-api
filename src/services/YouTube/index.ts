@@ -171,6 +171,9 @@ export class YouTube implements Service {
       },
       thumbnails: playerResponse.videoDetails.thumbnail?.thumbnails,
       streams,
+      duration: parseInt(playerResponse.videoDetails.lengthSeconds),
+      keywords: playerResponse.videoDetails.keywords,
+      description: playerResponse.videoDetails.shortDescription,
     };
   }
 

@@ -33,6 +33,7 @@ export interface Content {
   type: ContentType;
   title: string;
   description?: string;
+  duration?: number;
   statistics?: ContentStatistics;
   streams?: ContentStream[];
   thumbnails?: ContentThumbnail[];
