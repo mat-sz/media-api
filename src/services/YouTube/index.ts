@@ -98,6 +98,40 @@ interface PlayerConfig {
   };
 }
 
+interface InitialData {
+  responseContext?: any;
+  contents?: {
+    twoColumnWatchNextResults?: {
+      results?: {
+        results?: {
+          contents?: [
+            {
+              videoPrimaryInfoRenderer?: {};
+            },
+            {
+              videoSecondaryInfoRenderer?: {
+                owner?: {
+                  videoOwnerRenderer?: {
+                    thumbnail?: {
+                      thumbnails?: ContentThumbnail[];
+                    };
+                  };
+                };
+              };
+            }
+          ];
+        };
+      };
+    };
+  };
+  currentVideoEndpoint?: any;
+  trackingParams?: string;
+  playerOverlays?: any;
+  engagementPanels?: any[];
+  topbar?: any;
+  webWatchNextResponseExtensionData?: any;
+}
+
 export class YouTube implements Service {
   async fetchContent(id: string): Promise<Content> {
     const res = await this.fetch(
@@ -107,7 +141,8 @@ export class YouTube implements Service {
     const body = await res.text();
 
     this.checkResponse(body);
-    const playerResponse = this.scrapeVideoPage(body);
+    const playerResponse = this.scrapePlayerResponse(body);
+    const initialData = this.scrapeInitialData(body);
 
     if (playerResponse.videoDetails.videoId !== id) {
       throw new Error("Video ID doesn't match.");
@@ -129,6 +164,10 @@ export class YouTube implements Service {
       author: {
         id: playerResponse.videoDetails.channelId,
         name: playerResponse.videoDetails.author,
+        thumbnails:
+          initialData.contents?.twoColumnWatchNextResults?.results?.results
+            ?.contents?.[1].videoSecondaryInfoRenderer?.owner
+            ?.videoOwnerRenderer?.thumbnail?.thumbnails,
       },
       thumbnails: playerResponse.videoDetails.thumbnail?.thumbnails,
       streams,
@@ -166,7 +205,7 @@ export class YouTube implements Service {
     }
   }
 
-  private scrapeVideoPage(body: string): PlayerResponse {
+  private scrapePlayerResponse(body: string): PlayerResponse {
     const regex = new RegExp(/ytplayer.config\s*=\s*(.*?)};/);
     const match = regex.exec(body);
     if (!match?.[1]) {
@@ -202,5 +241,21 @@ export class YouTube implements Service {
     }
 
     return playerResponse;
+  }
+
+  private scrapeInitialData(body: string): InitialData {
+    const regex = new RegExp(/window\["ytInitialData"\]\s*=\s*(.*?);\n/);
+    const match = regex.exec(body);
+    if (!match?.[1]) {
+      throw new Error('Video unavailable.');
+    }
+
+    const initialData = JSON.parse(match[1]) as InitialData;
+
+    if (!initialData) {
+      throw new Error('Video unavailable.');
+    }
+
+    return initialData;
   }
 }

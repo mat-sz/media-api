@@ -12,6 +12,11 @@ describe('YouTube', () => {
     expect(content.author?.id).toBe('UC4QobU6STFB0P71PMvOGN5A');
     expect(content.author?.name).toBe('jawed');
 
+    expect(content.author?.thumbnails?.length).toBeGreaterThan(0);
+    expect(content.author?.thumbnails?.[0].url).toContain('ggpht.com');
+    expect(content.author?.thumbnails?.[0].width).toBeGreaterThan(0);
+    expect(content.author?.thumbnails?.[0].height).toBeGreaterThan(0);
+
     expect(content.streams?.length).toBeGreaterThan(0);
     expect(content.streams?.[0].url).toContain('googlevideo.com');
 
