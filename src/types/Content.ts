@@ -50,4 +50,5 @@ export interface Content {
   thumbnails?: ContentThumbnail[];
   keywords?: string[];
   author?: ContentAuthor;
+  date?: Date;
 }

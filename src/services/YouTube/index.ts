@@ -90,7 +90,14 @@ interface PlayerResponse {
   annotations?: any[];
   playerConfig?: any;
   storyboards?: any;
-  microformat?: any;
+  microformat?: {
+    playerMicroformatRenderer?: {
+      description?: {
+        simpleText?: string;
+      };
+      publishDate?: string;
+    };
+  };
   trackingParams?: string;
   attestation?: any;
   messages?: any[];
@@ -188,7 +195,8 @@ export class YouTube implements Service {
     const playerResponse = this.scrapePlayerResponse(body);
     const initialData = this.scrapeInitialData(body);
 
-    const { videoDetails, streamingData } = playerResponse;
+    const { videoDetails, streamingData, microformat } = playerResponse;
+    const microformatRenderer = microformat?.playerMicroformatRenderer;
 
     if (videoDetails.videoId !== id) {
       throw new Error("Video ID doesn't match.");
@@ -216,13 +224,12 @@ export class YouTube implements Service {
         ?.contents?.[0].videoPrimaryInfoRenderer;
     const sentimentBarTooltip =
       primaryInfo?.sentimentBar?.sentimentBarRenderer?.tooltip;
-    const viewCount =
-      primaryInfo?.viewCount?.videoViewCountRenderer?.viewCount?.simpleText;
+    const viewCount = videoDetails.viewCount;
 
     let statistics: ContentStatistics | undefined = undefined;
     if (viewCount) {
       statistics = {
-        plays: parseInt(viewCount.replace(/\D/g, '')),
+        plays: parseInt(viewCount),
       };
       if (sentimentBarTooltip) {
         const split = sentimentBarTooltip
@@ -252,7 +259,12 @@ export class YouTube implements Service {
       statistics,
       duration: parseInt(videoDetails.lengthSeconds),
       keywords: videoDetails.keywords,
-      description: videoDetails.shortDescription,
+      description:
+        microformatRenderer?.description?.simpleText ||
+        videoDetails.shortDescription,
+      date: microformatRenderer?.publishDate
+        ? new Date(microformatRenderer?.publishDate)
+        : undefined,
     };
   }
 

@@ -11,6 +11,7 @@ describe('YouTube', () => {
     expect(content.duration).toBe(19);
     expect(content.keywords).toContain('me at the zoo');
     expect(content.description).toContain('The first video on YouTube.');
+    expect(content.date?.getFullYear()).toBe(2005);
 
     expect(content.author?.id).toBe('UC4QobU6STFB0P71PMvOGN5A');
     expect(content.author?.name).toBe('jawed');
