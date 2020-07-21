@@ -44,6 +44,7 @@ All classes implement the `Service` interface:
 ```ts
 export interface Service {
   fetchContent(id: string): Promise<Content>;
+  fetchPlaylist(id: string): Promise<Playlist>;
 }
 ```
 

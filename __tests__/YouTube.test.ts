@@ -32,4 +32,12 @@ describe('YouTube', () => {
     expect(content.statistics?.likes).toBeGreaterThan(3500000);
     expect(content.statistics?.dislikes).toBeGreaterThan(100000);
   });
+
+  it('scrapes playlist information', async () => {
+    const youtube = new YouTube();
+    const playlist = await youtube.fetchPlaylist('PL5BF9E09ECEC8F88F');
+
+    expect(playlist.id).toBe('PL5BF9E09ECEC8F88F');
+    expect(playlist.title).toBe('4k Resolution');
+  });
 });

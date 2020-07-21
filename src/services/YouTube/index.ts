@@ -12,6 +12,7 @@ import { Service } from '../../types/Service';
 import { parse } from 'path';
 import { stat } from 'fs';
 import { formats } from './formats';
+import { Playlist } from '../../types/Playlist';
 
 interface PlayerRange {
   start: string;
@@ -162,6 +163,19 @@ interface InitialData {
   webWatchNextResponseExtensionData?: any;
 }
 
+interface PlaylistInitialData extends InitialData {
+  microformat?: {
+    microformatDataRenderer?: {
+      urlCanonical?: 'http://www.youtube.com/playlist?list=PL5BF9E09ECEC8F88F';
+      title?: '4k Resolution';
+      description?: '';
+      thumbnail?: {
+        thumbnails?: ContentThumbnail[];
+      };
+    };
+  };
+}
+
 export class YouTube implements Service {
   async fetchContent(id: string): Promise<Content> {
     const res = await this.fetch(
@@ -239,6 +253,26 @@ export class YouTube implements Service {
       duration: parseInt(videoDetails.lengthSeconds),
       keywords: videoDetails.keywords,
       description: videoDetails.shortDescription,
+    };
+  }
+
+  async fetchPlaylist(id: string): Promise<Playlist> {
+    const res = await this.fetch(
+      `playlist?list=${id}&gl=US&hl=en&has_verified=1&bpctr=9999999999`
+    );
+
+    const body = await res.text();
+
+    this.checkResponse(body);
+    const initialData = this.scrapeInitialData(body) as PlaylistInitialData;
+
+    if (!initialData.microformat?.microformatDataRenderer?.title) {
+      throw new Error('Playlist not available.');
+    }
+
+    return {
+      id: id,
+      title: initialData.microformat.microformatDataRenderer?.title,
     };
   }
 
