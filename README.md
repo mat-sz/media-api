@@ -59,8 +59,21 @@ export interface Content {
   duration?: number;
   statistics?: ContentStatistics;
   streams?: ContentStream[];
-  thumbnails?: ContentThumbnail[];
+  thumbnails?: Thumbnail[];
   keywords?: string[];
-  author?: ContentAuthor;
+  author?: Author;
+  date?: Date;
+}
+```
+
+The `Playlist` interface is defined [here](https://github.com/mat-sz/media-api/blob/master/src/types/Playlist.ts). This is the shortened representation of it:
+
+```ts
+export interface Playlist {
+  id: string;
+  title: string;
+  thumbnails?: Thumbnail[];
+  author?: Author;
+  contents?: Content[];
 }
 ```
