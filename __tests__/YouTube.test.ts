@@ -53,5 +53,23 @@ describe('YouTube', () => {
     expect(playlist.author?.thumbnails?.[0].url).toContain('ggpht.com');
     expect(playlist.author?.thumbnails?.[0].width).toBeGreaterThan(0);
     expect(playlist.author?.thumbnails?.[0].height).toBeGreaterThan(0);
+
+    const content = playlist.contents?.[0]!;
+    expect(content).toBeTruthy();
+
+    expect(content.type).toBe(ContentType.VIDEO);
+    expect(content.title).toBe(
+      'Life in the Garden (4k resolution) by Stephen Higgins and Henry Chen'
+    );
+    expect(content.id).toBe('N0m1XmvBey8');
+    expect(content.duration).toBe(114);
+
+    expect(content.author?.id).toBe('UCi4zXLLK0aXhz2ZLhgkdNvA');
+    expect(content.author?.name).toBe('sh');
+
+    expect(content.thumbnails?.length).toBeGreaterThan(0);
+    expect(content.thumbnails?.[0].url).toContain('ytimg.com');
+    expect(content.thumbnails?.[0].width).toBeGreaterThan(0);
+    expect(content.thumbnails?.[0].height).toBeGreaterThan(0);
   });
 });

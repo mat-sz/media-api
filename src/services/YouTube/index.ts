@@ -111,6 +111,15 @@ interface PlayerConfig {
 
 interface InitialData {
   responseContext?: any;
+  currentVideoEndpoint?: any;
+  trackingParams?: string;
+  playerOverlays?: any;
+  engagementPanels?: any[];
+  topbar?: any;
+  webWatchNextResponseExtensionData?: any;
+}
+
+interface VideoInitialData extends InitialData {
   contents?: {
     twoColumnWatchNextResults?: {
       results?: {
@@ -160,15 +169,74 @@ interface InitialData {
       };
     };
   };
-  currentVideoEndpoint?: any;
-  trackingParams?: string;
-  playerOverlays?: any;
-  engagementPanels?: any[];
-  topbar?: any;
-  webWatchNextResponseExtensionData?: any;
 }
 
 interface PlaylistInitialData extends InitialData {
+  contents?: {
+    twoColumnBrowseResultsRenderer?: {
+      tabs?: [
+        {
+          tabRenderer: {
+            selected: boolean;
+            content: {
+              sectionListRenderer?: {
+                contents?: [
+                  {
+                    itemSectionRenderer?: {
+                      contents?: [
+                        {
+                          playlistVideoListRenderer?: {
+                            contents?: [
+                              {
+                                playlistVideoRenderer: {
+                                  videoId: string;
+                                  thumbnail: {
+                                    thumbnails: Thumbnail[];
+                                  };
+                                  title: {
+                                    simpleText: string;
+                                  };
+                                  index: {
+                                    simpleText: string;
+                                  };
+                                  shortBylineText: {
+                                    runs: {
+                                      text: string;
+                                      navigationEndpoint: {
+                                        browseEndpoint: {
+                                          browseId: string;
+                                          canonicalBaseUrl: string;
+                                        };
+                                      };
+                                    }[];
+                                  };
+                                  navigationEndpoint: {
+                                    watchEndpoint: {
+                                      videoId: string;
+                                      playlistId: string;
+                                      index: number;
+                                      startTimeSeconds: number;
+                                    };
+                                  };
+                                  lengthSeconds: string;
+                                  isPlayable: boolean;
+                                  isWatched: boolean;
+                                };
+                              }
+                            ];
+                          };
+                        }
+                      ];
+                    };
+                  }
+                ];
+              };
+            };
+          };
+        }
+      ];
+    };
+  };
   microformat?: {
     microformatDataRenderer?: {
       urlCanonical?: 'http://www.youtube.com/playlist?list=PL5BF9E09ECEC8F88F';
@@ -221,7 +289,7 @@ export class YouTube implements Service {
 
     this.checkResponse(body);
     const playerResponse = this.scrapePlayerResponse(body);
-    const initialData = this.scrapeInitialData(body);
+    const initialData = this.scrapeInitialData(body) as VideoInitialData;
 
     const { videoDetails, streamingData, microformat } = playerResponse;
     const microformatRenderer = microformat?.playerMicroformatRenderer;
@@ -310,6 +378,11 @@ export class YouTube implements Service {
     const videoOwnerRenderer =
       initialData.sidebar?.playlistSidebarRenderer?.items?.[1]
         ?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer;
+    const playlistContents =
+      initialData.contents?.twoColumnBrowseResultsRenderer?.tabs?.[0]
+        ?.tabRenderer.content.sectionListRenderer?.contents?.[0]
+        .itemSectionRenderer?.contents?.[0]?.playlistVideoListRenderer
+        ?.contents;
 
     if (!microformatRenderer?.title || !videoOwnerRenderer?.title?.runs?.[0]) {
       throw new Error('Playlist not available.');
@@ -326,6 +399,19 @@ export class YouTube implements Service {
         name: titleRun.text,
         thumbnails: videoOwnerRenderer.thumbnail?.thumbnails,
       },
+      contents: playlistContents?.map(content => ({
+        id: content.playlistVideoRenderer.videoId,
+        title: content.playlistVideoRenderer.title.simpleText,
+        type: ContentType.VIDEO,
+        author: {
+          id:
+            content.playlistVideoRenderer.shortBylineText.runs[0]
+              .navigationEndpoint.browseEndpoint.browseId,
+          name: content.playlistVideoRenderer.shortBylineText.runs[0].text,
+        },
+        thumbnails: content.playlistVideoRenderer.thumbnail.thumbnails,
+        duration: parseInt(content.playlistVideoRenderer.lengthSeconds),
+      })),
     };
   }
 
