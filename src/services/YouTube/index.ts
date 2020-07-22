@@ -213,8 +213,8 @@ export class YouTube implements Service {
           bitrate: format.bitrate,
           fps: format.fps,
           label: format.qualityLabel,
-          height: formats[format.itag]?.height,
-          width: formats[format.itag]?.width,
+          height: fmt?.height,
+          width: fmt?.width,
         });
       }
     }
@@ -277,14 +277,17 @@ export class YouTube implements Service {
 
     this.checkResponse(body);
     const initialData = this.scrapeInitialData(body) as PlaylistInitialData;
+    const microformatRenderer =
+      initialData.microformat?.microformatDataRenderer;
 
-    if (!initialData.microformat?.microformatDataRenderer?.title) {
+    if (!microformatRenderer?.title) {
       throw new Error('Playlist not available.');
     }
 
     return {
       id: id,
-      title: initialData.microformat.microformatDataRenderer?.title,
+      title: microformatRenderer?.title,
+      thumbnails: microformatRenderer?.thumbnail?.thumbnails,
     };
   }
 

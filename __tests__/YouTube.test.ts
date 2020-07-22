@@ -40,5 +40,10 @@ describe('YouTube', () => {
 
     expect(playlist.id).toBe('PL5BF9E09ECEC8F88F');
     expect(playlist.title).toBe('4k Resolution');
+
+    expect(playlist.thumbnails?.length).toBeGreaterThan(0);
+    expect(playlist.thumbnails?.[0].url).toContain('ytimg.com');
+    expect(playlist.thumbnails?.[0].width).toBeGreaterThan(0);
+    expect(playlist.thumbnails?.[0].height).toBeGreaterThan(0);
   });
 });
