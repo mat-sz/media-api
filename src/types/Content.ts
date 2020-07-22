@@ -1,3 +1,6 @@
+import { Thumbnail } from './Thumbnail';
+import { Author } from './Author';
+
 export enum ContentType {
   VIDEO = 'video',
   LIVE_STREAM = 'live_stream',
@@ -16,12 +19,6 @@ export interface ContentStatistics {
   dislikes?: number;
 }
 
-export interface ContentThumbnail {
-  width: number;
-  height: number;
-  url: string;
-}
-
 export interface ContentStream {
   url: string;
   type: ContentStreamType;
@@ -32,13 +29,6 @@ export interface ContentStream {
   bitrate?: number;
 }
 
-export interface ContentAuthor {
-  name: string;
-  id: string;
-  url?: string;
-  thumbnails?: ContentThumbnail[];
-}
-
 export interface Content {
   id: string;
   type: ContentType;
@@ -47,8 +37,8 @@ export interface Content {
   duration?: number;
   statistics?: ContentStatistics;
   streams?: ContentStream[];
-  thumbnails?: ContentThumbnail[];
+  thumbnails?: Thumbnail[];
   keywords?: string[];
-  author?: ContentAuthor;
+  author?: Author;
   date?: Date;
 }

@@ -1,8 +1,9 @@
-import { ContentThumbnail, ContentAuthor } from './Content';
+import { Thumbnail } from './Thumbnail';
+import { Author } from './Author';
 
 export interface Playlist {
   id: string;
   title: string;
-  thumbnails?: ContentThumbnail[];
-  author?: ContentAuthor;
+  thumbnails?: Thumbnail[];
+  author?: Author;
 }

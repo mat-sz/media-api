@@ -4,16 +4,13 @@ import {
   Content,
   ContentType,
   ContentStream,
-  ContentThumbnail,
   ContentStatistics,
   ContentStreamType,
-  ContentAuthor,
 } from '../../types/Content';
+import { Thumbnail } from '../../types/Thumbnail';
 import { Service } from '../../types/Service';
-import { parse } from 'path';
-import { stat } from 'fs';
-import { formats } from './formats';
 import { Playlist } from '../../types/Playlist';
+import { formats } from './formats';
 
 interface PlayerRange {
   start: string;
@@ -77,7 +74,7 @@ interface PlayerResponse {
     shortDescription?: string;
     isCrawlable?: boolean;
     thumbnail?: {
-      thumbnails?: ContentThumbnail[];
+      thumbnails?: Thumbnail[];
     };
     useCipher?: boolean;
     averageRating?: number;
@@ -152,7 +149,7 @@ interface InitialData {
                 owner?: {
                   videoOwnerRenderer?: {
                     thumbnail?: {
-                      thumbnails?: ContentThumbnail[];
+                      thumbnails?: Thumbnail[];
                     };
                   };
                 };
@@ -178,7 +175,7 @@ interface PlaylistInitialData extends InitialData {
       title?: '4k Resolution';
       description?: '';
       thumbnail?: {
-        thumbnails?: ContentThumbnail[];
+        thumbnails?: Thumbnail[];
       };
     };
   };
@@ -193,7 +190,7 @@ interface PlaylistInitialData extends InitialData {
             videoOwner?: {
               videoOwnerRenderer?: {
                 thumbnail?: {
-                  thumbnails?: ContentThumbnail[];
+                  thumbnails?: Thumbnail[];
                 };
                 title?: {
                   runs?: {
