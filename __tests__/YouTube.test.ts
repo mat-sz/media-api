@@ -45,5 +45,13 @@ describe('YouTube', () => {
     expect(playlist.thumbnails?.[0].url).toContain('ytimg.com');
     expect(playlist.thumbnails?.[0].width).toBeGreaterThan(0);
     expect(playlist.thumbnails?.[0].height).toBeGreaterThan(0);
+
+    expect(playlist.author?.id).toBe('UCBR8-60-B28hp2BmDPdntcQ');
+    expect(playlist.author?.name).toBe('YouTube');
+
+    expect(playlist.author?.thumbnails?.length).toBeGreaterThan(0);
+    expect(playlist.author?.thumbnails?.[0].url).toContain('ggpht.com');
+    expect(playlist.author?.thumbnails?.[0].width).toBeGreaterThan(0);
+    expect(playlist.author?.thumbnails?.[0].height).toBeGreaterThan(0);
   });
 });

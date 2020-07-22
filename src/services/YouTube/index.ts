@@ -7,6 +7,7 @@ import {
   ContentThumbnail,
   ContentStatistics,
   ContentStreamType,
+  ContentAuthor,
 } from '../../types/Content';
 import { Service } from '../../types/Service';
 import { parse } from 'path';
@@ -181,6 +182,36 @@ interface PlaylistInitialData extends InitialData {
       };
     };
   };
+  sidebar?: {
+    playlistSidebarRenderer?: {
+      items?: [
+        {
+          playlistSidebarPrimaryInfoRenderer?: {};
+        },
+        {
+          playlistSidebarSecondaryInfoRenderer?: {
+            videoOwner?: {
+              videoOwnerRenderer?: {
+                thumbnail?: {
+                  thumbnails?: ContentThumbnail[];
+                };
+                title?: {
+                  runs?: {
+                    text: string;
+                    navigationEndpoint: {
+                      browseEndpoint: {
+                        browseId: string;
+                      };
+                    };
+                  }[];
+                };
+              };
+            };
+          };
+        }
+      ];
+    };
+  };
 }
 
 export class YouTube implements Service {
@@ -279,15 +310,25 @@ export class YouTube implements Service {
     const initialData = this.scrapeInitialData(body) as PlaylistInitialData;
     const microformatRenderer =
       initialData.microformat?.microformatDataRenderer;
+    const videoOwnerRenderer =
+      initialData.sidebar?.playlistSidebarRenderer?.items?.[1]
+        ?.playlistSidebarSecondaryInfoRenderer?.videoOwner?.videoOwnerRenderer;
 
-    if (!microformatRenderer?.title) {
+    if (!microformatRenderer?.title || !videoOwnerRenderer?.title?.runs?.[0]) {
       throw new Error('Playlist not available.');
     }
+
+    const titleRun = videoOwnerRenderer.title.runs[0];
 
     return {
       id: id,
       title: microformatRenderer?.title,
       thumbnails: microformatRenderer?.thumbnail?.thumbnails,
+      author: {
+        id: titleRun.navigationEndpoint.browseEndpoint.browseId,
+        name: titleRun.text,
+        thumbnails: videoOwnerRenderer.thumbnail?.thumbnails,
+      },
     };
   }
 
