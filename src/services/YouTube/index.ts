@@ -262,7 +262,7 @@ interface PlaylistInitialData extends InitialData {
                   thumbnails?: Thumbnail[];
                 };
                 title?: {
-                  runs?: {
+                  runs: {
                     text: string;
                     navigationEndpoint: {
                       browseEndpoint: {
@@ -294,6 +294,17 @@ interface SearchInitialData {
                     title?: {
                       runs?: {
                         text?: string;
+                      }[];
+                    };
+                    longBylineText?: {
+                      runs: {
+                        text: string;
+                        navigationEndpoint: {
+                          browseEndpoint: {
+                            browseId: string;
+                            canonicalBaseUrl: string;
+                          };
+                        };
                       }[];
                     };
                     thumbnail?: { thumbnails: Thumbnail[] };
@@ -469,6 +480,14 @@ export class YouTube implements Service {
         title: content.videoRenderer.title?.runs?.[0]?.text || '',
         type: ContentType.VIDEO,
         thumbnails: content.videoRenderer.thumbnail?.thumbnails,
+        author: content.videoRenderer.longBylineText?.runs[0]
+          ? {
+              id:
+                content.videoRenderer.longBylineText?.runs[0].navigationEndpoint
+                  .browseEndpoint.browseId,
+              name: content.videoRenderer.longBylineText?.runs[0].text,
+            }
+          : undefined,
       })),
     };
   }

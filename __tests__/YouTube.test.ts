@@ -84,5 +84,13 @@ describe('YouTube', () => {
     expect(content.type).toBe(ContentType.VIDEO);
     expect(content.title).toBe('Me at the zoo');
     expect(content.id).toBe('jNQXAC9IVRw');
+
+    expect(content.author?.id).toBe('UC4QobU6STFB0P71PMvOGN5A');
+    expect(content.author?.name).toBe('jawed');
+
+    expect(content.thumbnails?.length).toBeGreaterThan(0);
+    expect(content.thumbnails?.[0].url).toContain('ytimg.com');
+    expect(content.thumbnails?.[0].width).toBeGreaterThan(0);
+    expect(content.thumbnails?.[0].height).toBeGreaterThan(0);
   });
 });
