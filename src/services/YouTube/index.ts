@@ -468,6 +468,7 @@ export class YouTube implements Service {
         id: content.videoRenderer.videoId,
         title: content.videoRenderer.title?.runs?.[0]?.text || '',
         type: ContentType.VIDEO,
+        thumbnails: content.videoRenderer.thumbnail?.thumbnails,
       })),
     };
   }
