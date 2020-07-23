@@ -72,4 +72,17 @@ describe('YouTube', () => {
     expect(content.thumbnails?.[0].width).toBeGreaterThan(0);
     expect(content.thumbnails?.[0].height).toBeGreaterThan(0);
   });
+
+  it('retrieves search results', async () => {
+    const youtube = new YouTube();
+    const results = await youtube.search('me at the zoo');
+
+    expect(results.contents?.[0]).toBeTruthy();
+
+    const content = results.contents?.[0]!;
+
+    expect(content.type).toBe(ContentType.VIDEO);
+    expect(content.title).toBe('Me at the zoo');
+    expect(content.id).toBe('jNQXAC9IVRw');
+  });
 });

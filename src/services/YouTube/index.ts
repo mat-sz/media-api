@@ -11,6 +11,7 @@ import { Thumbnail } from '../../types/Thumbnail';
 import { Service } from '../../types/Service';
 import { Playlist } from '../../types/Playlist';
 import { formats } from './formats';
+import { SearchResults } from '../../types/SearchResults';
 
 interface PlayerRange {
   start: string;
@@ -279,6 +280,34 @@ interface PlaylistInitialData extends InitialData {
   };
 }
 
+interface SearchInitialData {
+  contents?: {
+    twoColumnSearchResultsRenderer: {
+      primaryContents: {
+        sectionListRenderer: {
+          contents: [
+            {
+              itemSectionRenderer: {
+                contents: {
+                  videoRenderer: {
+                    videoId: string;
+                    title?: {
+                      runs?: {
+                        text?: string;
+                      }[];
+                    };
+                    thumbnail?: { thumbnails: Thumbnail[] };
+                  };
+                }[];
+              };
+            }
+          ];
+        };
+      };
+    };
+  };
+}
+
 export class YouTube implements Service {
   async fetchContent(id: string): Promise<Content> {
     const res = await this.fetch(
@@ -415,6 +444,34 @@ export class YouTube implements Service {
     };
   }
 
+  async search(id: string): Promise<SearchResults> {
+    const res = await this.fetch(
+      `results?search_query=${encodeURIComponent(
+        id
+      )}&gl=US&hl=en&has_verified=1&bpctr=9999999999`
+    );
+
+    const body = await res.text();
+
+    this.checkResponse(body);
+    const initialData = this.scrapeInitialData(body) as SearchInitialData;
+    const searchContents =
+      initialData.contents?.twoColumnSearchResultsRenderer.primaryContents
+        .sectionListRenderer.contents[0].itemSectionRenderer.contents;
+
+    if (!searchContents) {
+      throw new Error('Search results not available.');
+    }
+
+    return {
+      contents: searchContents?.map(content => ({
+        id: content.videoRenderer.videoId,
+        title: content.videoRenderer.title?.runs?.[0]?.text || '',
+        type: ContentType.VIDEO,
+      })),
+    };
+  }
+
   private fetch(url: string, init?: RequestInit): Promise<Response> {
     if (!init) {
       init = {};
@@ -488,13 +545,13 @@ export class YouTube implements Service {
     const regex = new RegExp(/window\["ytInitialData"\]\s*=\s*(.*?);\n/);
     const match = regex.exec(body);
     if (!match?.[1]) {
-      throw new Error('Video unavailable.');
+      throw new Error('Website unavailable.');
     }
 
     const initialData = JSON.parse(match[1]) as InitialData;
 
     if (!initialData) {
-      throw new Error('Video unavailable.');
+      throw new Error('Website unavailable.');
     }
 
     return initialData;
