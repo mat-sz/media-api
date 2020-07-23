@@ -448,7 +448,7 @@ export class YouTube implements Service {
     const res = await this.fetch(
       `results?search_query=${encodeURIComponent(
         id
-      )}&gl=US&hl=en&has_verified=1&bpctr=9999999999`
+      )}&sp=EgIQAQ%253D%253D&gl=US&hl=en&has_verified=1&bpctr=9999999999`
     );
 
     const body = await res.text();
