@@ -45,6 +45,7 @@ All classes implement the `Service` interface:
 export interface Service {
   fetchContent(id: string): Promise<Content>;
   fetchPlaylist(id: string): Promise<Playlist>;
+  search(id: string): Promise<SearchResults>;
 }
 ```
 
@@ -74,6 +75,14 @@ export interface Playlist {
   title: string;
   thumbnails?: Thumbnail[];
   author?: Author;
+  contents?: Content[];
+}
+```
+
+The `SearchResults` interface is defined [here](https://github.com/mat-sz/media-api/blob/master/src/types/SearchResults.ts). This is the shortened representation of it:
+
+```ts
+export interface SearchResults {
   contents?: Content[];
 }
 ```
