@@ -36,6 +36,7 @@ async function example() {
 ## Supported media websites:
 
 - YouTube
+- SoundCloud
 
 ## Usage
 
