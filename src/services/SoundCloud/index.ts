@@ -124,6 +124,17 @@ export class SoundCloud implements Service {
       type: ContentType.AUDIO,
       id: track.id.toString(),
       title: track.title,
+      author: {
+        id: track.user.id.toString(),
+        name: track.user.permalink,
+        thumbnails: [
+          {
+            url: track.user.avatar_url,
+            height: 100,
+            width: 100,
+          },
+        ],
+      },
     };
   }
 
