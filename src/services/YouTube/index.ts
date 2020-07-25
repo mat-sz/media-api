@@ -36,6 +36,8 @@ interface PlayerFormat {
   audioChannels?: string;
   fps?: number;
   qualityLabel?: string;
+  signatureCipher?: string;
+  cipher?: string;
 }
 
 interface PlayerResponse {
@@ -136,19 +138,19 @@ interface CompactVideoRenderer {
   videoId: string;
   thumbnail: {
     thumbnails: Thumbnail[];
-  },
+  };
   title: {
-    simpleText: string
-  },
+    simpleText: string;
+  };
   longBylineText: LongBylineText;
   viewCountText: {
-    runs: {text: string}[]
-  },
+    runs: { text: string }[];
+  };
   badges?: {
     metadataBadgeRenderer: {
       style: string;
       label: string;
-    }
+    };
   }[];
 }
 
@@ -206,15 +208,15 @@ interface VideoInitialData extends InitialData {
             compactAutoplayRenderer?: {
               contents: [
                 {
-                  compactVideoRenderer?: CompactVideoRenderer
+                  compactVideoRenderer?: CompactVideoRenderer;
                 }
-              ]
-            },
-            compactRadioRenderer?: {}
-            compactVideoRenderer?: CompactVideoRenderer
-          }[]
-        }
-      }
+              ];
+            };
+            compactRadioRenderer?: {};
+            compactVideoRenderer?: CompactVideoRenderer;
+          }[];
+        };
+      };
     };
   };
 }
@@ -356,6 +358,13 @@ interface SearchInitialData {
   };
 }
 
+enum Operations {
+  REVERSE,
+  SLICE,
+  SPLICE,
+  SWAP,
+}
+
 export class YouTube implements Service {
   async content(id: string): Promise<Content> {
     const res = await this.fetch(
@@ -375,13 +384,26 @@ export class YouTube implements Service {
       throw new Error("Video ID doesn't match.");
     }
 
+    const baseJsUrl = this.scrapeBaseJsUrl(body);
+    const baseJsRes = await this.fetch(baseJsUrl);
+    const baseJsBody = await baseJsRes.text();
+    const decipher = this.scrapeCipherOperations(baseJsBody);
+
     const streams: ContentStream[] = [];
     if (streamingData?.adaptiveFormats) {
       for (let format of streamingData?.adaptiveFormats) {
         const itag = format.itag.toString();
         const fmt = itag in formats ? formats[itag] : undefined;
+        let url = format.url;
+        if (format.signatureCipher || format.cipher) {
+          url = this.decipherUrl(
+            (format.signatureCipher || format.cipher) as string,
+            decipher
+          );
+        }
+
         streams.push({
-          url: format.url,
+          url,
           type: format.fps ? ContentStreamType.VIDEO : ContentStreamType.VIDEO,
           bitrate: format.bitrate,
           fps: format.fps,
@@ -416,20 +438,32 @@ export class YouTube implements Service {
     }
 
     let related: Content[] | undefined = undefined;
-    if (initialData.contents?.twoColumnWatchNextResults?.secondaryResults?.secondaryResults.results[0]) {
+    if (
+      initialData.contents?.twoColumnWatchNextResults?.secondaryResults
+        ?.secondaryResults.results[0]
+    ) {
       related = [];
-      const secondaryResults = initialData.contents?.twoColumnWatchNextResults?.secondaryResults?.secondaryResults.results[0];
-      if (secondaryResults.compactAutoplayRenderer?.contents[0]?.compactVideoRenderer) {
-        const renderer = secondaryResults.compactAutoplayRenderer?.contents[0]?.compactVideoRenderer;
+      const secondaryResults =
+        initialData.contents?.twoColumnWatchNextResults?.secondaryResults
+          ?.secondaryResults.results[0];
+      if (
+        secondaryResults.compactAutoplayRenderer?.contents[0]
+          ?.compactVideoRenderer
+      ) {
+        const renderer =
+          secondaryResults.compactAutoplayRenderer?.contents[0]
+            ?.compactVideoRenderer;
         related.push({
           id: renderer.videoId,
           title: renderer.title.simpleText,
           type: renderer.badges ? ContentType.LIVE_STREAM : ContentType.VIDEO,
           author: {
-            id: renderer.longBylineText.runs[0].navigationEndpoint.browseEndpoint.browseId,
-            name: renderer.longBylineText.runs[0].text
-          }
-        })
+            id:
+              renderer.longBylineText.runs[0].navigationEndpoint.browseEndpoint
+                .browseId,
+            name: renderer.longBylineText.runs[0].text,
+          },
+        });
       }
     }
 
@@ -580,7 +614,7 @@ export class YouTube implements Service {
   }
 
   private scrapePlayerResponse(body: string): PlayerResponse {
-    const regex = new RegExp(/ytplayer.config\s*=\s*(.*?)};/);
+    const regex = /ytplayer.config\s*=\s*(.*?)};/;
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Video unavailable.');
@@ -618,7 +652,7 @@ export class YouTube implements Service {
   }
 
   private scrapeInitialData(body: string): InitialData {
-    const regex = new RegExp(/window\["ytInitialData"\]\s*=\s*(.*?);\n/);
+    const regex = /window\["ytInitialData"\]\s*=\s*(.*?);\n/;
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Website unavailable.');
@@ -631,5 +665,105 @@ export class YouTube implements Service {
     }
 
     return initialData;
+  }
+
+  private decipherUrl(signature: string, decipher: (text: string) => string) {
+    const params = new URLSearchParams(signature);
+    const arg = params.get('sp');
+    const sig = params.get('s');
+    const url = params.get('url');
+
+    if (!arg || !sig || !url) {
+      throw new Error('Invalid parameters.');
+    }
+
+    return url + '&' + arg + '=' + decipher(sig);
+  }
+
+  private scrapeBaseJsUrl(body: string): string {
+    const regex = /src="(.*?)"\stype="text\/javascript" name="player_ias\/base"/;
+    const match = regex.exec(body);
+    if (!match?.[1]) {
+      throw new Error('Player unavailable.');
+    }
+
+    return match[1];
+  }
+
+  private scrapeCipherOperations(baseJsBody: string): (text: string) => string {
+    const objectRegex = /var (\w{1,4})={(((\w+):function\(a.*?(a\.reverse|a\.slice|a\.splice|var c=a.*?a\.length)+.*?}(,\n)?))+};/;
+    const objectMatch = objectRegex.exec(baseJsBody)!;
+    const functionRegex = /(\w{1,4})=function\(a\){a=a\.split\(""\);()(.*?)return a\.join\(""\)};/;
+    const functionMatch = functionRegex.exec(baseJsBody);
+
+    if (!objectMatch?.[0] || !functionMatch?.[0]) {
+      throw new Error('Player unavailable.');
+    }
+
+    const objectName = objectMatch[1];
+    const objectBody = objectMatch[0];
+    const functionBody = functionMatch[3];
+
+    const operations: Record<string, Operations> = {};
+    const objectLines = objectBody
+      .replace('var ' + objectName + '={', '')
+      .split('\n');
+    for (const line of objectLines) {
+      const name = line.split(':')[0];
+      if (line.includes('a.reverse')) {
+        operations[name] = Operations.REVERSE;
+      } else if (line.includes('a.slice')) {
+        operations[name] = Operations.SLICE;
+      } else if (line.includes('a.splice')) {
+        operations[name] = Operations.SPLICE;
+      } else {
+        operations[name] = Operations.SWAP;
+      }
+    }
+
+    const textFunctions: ((chars: string[]) => string[])[] = [];
+    const calls = functionBody.split(';');
+    for (const call of calls) {
+      if (call.length > 0 && call.startsWith(objectName + '.')) {
+        const operationName = call.replace(objectName + '.', '').split('(')[0];
+        const commaSplit = call.split(',');
+        let operationArgument: string = '0';
+        if (commaSplit.length > 1) {
+          operationArgument = commaSplit[1].split(')')[0];
+        }
+
+        const argument = parseInt(operationArgument);
+
+        if (operations[operationName]) {
+          switch (operations[operationName]) {
+            case Operations.REVERSE:
+              textFunctions.push(chars => chars.reverse());
+              break;
+            case Operations.SLICE:
+              textFunctions.push(chars => chars.slice(argument));
+              break;
+            case Operations.SPLICE:
+              textFunctions.push(chars => chars.splice(0, argument));
+              break;
+            case Operations.SWAP:
+              textFunctions.push(chars => {
+                const first = chars[0];
+                chars[0] = chars[argument % chars.length];
+                chars[argument] = first;
+                return chars;
+              });
+              break;
+          }
+        }
+      }
+    }
+
+    return text => {
+      let chars = text.split('');
+      for (const fn of textFunctions) {
+        chars = fn(chars);
+      }
+      return chars.join('');
+    };
   }
 }

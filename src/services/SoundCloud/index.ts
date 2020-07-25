@@ -159,7 +159,7 @@ export class SoundCloud implements Service {
   }
 
   private scrapeData(body: string): DataBlock[] {
-    const regex = new RegExp(/catch\(t\){}}\)},(.*?)\);/);
+    const regex = /catch\(t\){}}\)},(.*?)\);/;
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Content unavailable.');

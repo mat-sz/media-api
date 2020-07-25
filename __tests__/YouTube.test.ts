@@ -23,6 +23,8 @@ describe('YouTube', () => {
 
     expect(content.streams?.length).toBeGreaterThan(0);
     expect(content.streams?.[0].url).toContain('googlevideo.com');
+    expect(content.streams?.[0].url).toContain('ip=');
+    expect(content.streams?.[0].url).toContain('sig=');
 
     expect(content.thumbnails?.length).toBeGreaterThan(0);
     expect(content.thumbnails?.[0].url).toContain('ytimg.com');
