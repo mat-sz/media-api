@@ -404,7 +404,9 @@ export class YouTube implements Service {
 
         streams.push({
           url,
-          type: format.fps ? ContentStreamType.VIDEO : ContentStreamType.VIDEO,
+          type: format.mimeType.startsWith('video/')
+            ? ContentStreamType.VIDEO
+            : ContentStreamType.AUDIO,
           bitrate: format.bitrate,
           fps: format.fps,
           label: format.qualityLabel,
@@ -734,7 +736,7 @@ export class YouTube implements Service {
 
         const argument = parseInt(operationArgument);
 
-        if (operations[operationName]) {
+        if (typeof operations[operationName] !== 'undefined') {
           switch (operations[operationName]) {
             case Operations.REVERSE:
               textFunctions.push(chars => chars.reverse());
