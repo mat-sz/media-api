@@ -41,4 +41,5 @@ export interface Content {
   keywords?: string[];
   author?: Author;
   date?: Date;
+  related?: Content[];
 }

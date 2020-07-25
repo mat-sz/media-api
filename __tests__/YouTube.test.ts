@@ -32,6 +32,15 @@ describe('YouTube', () => {
     expect(content.statistics?.plays).toBeGreaterThan(100000000);
     expect(content.statistics?.likes).toBeGreaterThan(3500000);
     expect(content.statistics?.dislikes).toBeGreaterThan(100000);
+
+    expect(content.related?.length).toBeGreaterThan(0);
+
+    const related = content.related?.[0]!;
+    expect(related.id).toBeTruthy();
+    expect(related.title).toBeTruthy();
+    expect(related.type).toBeTruthy();
+    expect(related.author?.id).toBeTruthy();
+    expect(related.author?.name).toBeTruthy();
   });
 
   it('scrapes playlist information', async () => {

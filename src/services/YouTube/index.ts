@@ -120,6 +120,38 @@ interface InitialData {
   webWatchNextResponseExtensionData?: any;
 }
 
+interface LongBylineText {
+  runs: {
+    text: string;
+    navigationEndpoint: {
+      browseEndpoint: {
+        browseId: string;
+        canonicalBaseUrl: string;
+      };
+    };
+  }[];
+}
+
+interface CompactVideoRenderer {
+  videoId: string;
+  thumbnail: {
+    thumbnails: Thumbnail[];
+  },
+  title: {
+    simpleText: string
+  },
+  longBylineText: LongBylineText;
+  viewCountText: {
+    runs: {text: string}[]
+  },
+  badges?: {
+    metadataBadgeRenderer: {
+      style: string;
+      label: string;
+    }
+  }[];
+}
+
 interface VideoInitialData extends InitialData {
   contents?: {
     twoColumnWatchNextResults?: {
@@ -168,6 +200,21 @@ interface VideoInitialData extends InitialData {
           ];
         };
       };
+      secondaryResults?: {
+        secondaryResults: {
+          results: {
+            compactAutoplayRenderer?: {
+              contents: [
+                {
+                  compactVideoRenderer?: CompactVideoRenderer
+                }
+              ]
+            },
+            compactRadioRenderer?: {}
+            compactVideoRenderer?: CompactVideoRenderer
+          }[]
+        }
+      }
     };
   };
 }
@@ -296,17 +343,7 @@ interface SearchInitialData {
                         text?: string;
                       }[];
                     };
-                    longBylineText?: {
-                      runs: {
-                        text: string;
-                        navigationEndpoint: {
-                          browseEndpoint: {
-                            browseId: string;
-                            canonicalBaseUrl: string;
-                          };
-                        };
-                      }[];
-                    };
+                    longBylineText?: LongBylineText;
                     thumbnail?: { thumbnails: Thumbnail[] };
                   };
                 }[];
@@ -378,6 +415,24 @@ export class YouTube implements Service {
       }
     }
 
+    let related: Content[] | undefined = undefined;
+    if (initialData.contents?.twoColumnWatchNextResults?.secondaryResults?.secondaryResults.results[0]) {
+      related = [];
+      const secondaryResults = initialData.contents?.twoColumnWatchNextResults?.secondaryResults?.secondaryResults.results[0];
+      if (secondaryResults.compactAutoplayRenderer?.contents[0]?.compactVideoRenderer) {
+        const renderer = secondaryResults.compactAutoplayRenderer?.contents[0]?.compactVideoRenderer;
+        related.push({
+          id: renderer.videoId,
+          title: renderer.title.simpleText,
+          type: renderer.badges ? ContentType.LIVE_STREAM : ContentType.VIDEO,
+          author: {
+            id: renderer.longBylineText.runs[0].navigationEndpoint.browseEndpoint.browseId,
+            name: renderer.longBylineText.runs[0].text
+          }
+        })
+      }
+    }
+
     return {
       type: ContentType.VIDEO,
       id: id,
@@ -401,6 +456,7 @@ export class YouTube implements Service {
       date: microformatRenderer?.publishDate
         ? new Date(microformatRenderer?.publishDate)
         : undefined,
+      related,
     };
   }
 
