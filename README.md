@@ -28,7 +28,7 @@ import { YouTube } from 'media-api';
 
 async function example() {
   const youtube = new YouTube();
-  const content = await youtube.fetchContent('jNQXAC9IVRw');
+  const content = await youtube.content('jNQXAC9IVRw');
   console.log(content);
 }
 ```
@@ -46,8 +46,8 @@ All classes implement the `Service` interface:
 
 ```ts
 export interface Service {
-  fetchContent(id: string): Promise<Content>;
-  fetchPlaylist(id: string): Promise<Playlist>;
+  content(id: string): Promise<Content>;
+  playlist(id: string): Promise<Playlist>;
   search(id: string): Promise<SearchResults>;
 }
 ```

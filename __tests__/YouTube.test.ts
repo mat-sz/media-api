@@ -3,7 +3,7 @@ import { YouTube, ContentType } from '../src';
 describe('YouTube', () => {
   it('scrapes video information', async () => {
     const youtube = new YouTube();
-    const content = await youtube.fetchContent('jNQXAC9IVRw');
+    const content = await youtube.content('jNQXAC9IVRw');
 
     expect(content.type).toBe(ContentType.VIDEO);
     expect(content.title).toBe('Me at the zoo');
@@ -36,7 +36,7 @@ describe('YouTube', () => {
 
   it('scrapes playlist information', async () => {
     const youtube = new YouTube();
-    const playlist = await youtube.fetchPlaylist('PL5BF9E09ECEC8F88F');
+    const playlist = await youtube.playlist('PL5BF9E09ECEC8F88F');
 
     expect(playlist.id).toBe('PL5BF9E09ECEC8F88F');
     expect(playlist.title).toBe('4k Resolution');

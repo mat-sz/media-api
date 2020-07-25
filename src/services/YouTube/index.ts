@@ -320,7 +320,7 @@ interface SearchInitialData {
 }
 
 export class YouTube implements Service {
-  async fetchContent(id: string): Promise<Content> {
+  async content(id: string): Promise<Content> {
     const res = await this.fetch(
       `watch?v=${id}&gl=US&hl=en&has_verified=1&bpctr=9999999999`
     );
@@ -404,7 +404,7 @@ export class YouTube implements Service {
     };
   }
 
-  async fetchPlaylist(id: string): Promise<Playlist> {
+  async playlist(id: string): Promise<Playlist> {
     const res = await this.fetch(
       `playlist?list=${id}&gl=US&hl=en&has_verified=1&bpctr=9999999999`
     );

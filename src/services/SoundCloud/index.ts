@@ -114,7 +114,7 @@ interface Track {
 }
 
 export class SoundCloud implements Service {
-  async fetchContent(id: string): Promise<Content> {
+  async content(id: string): Promise<Content> {
     const res = await this.fetch(id);
 
     const body = await res.text();
