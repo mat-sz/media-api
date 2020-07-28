@@ -407,7 +407,10 @@ export class YouTube implements Service {
               textFunctions.push(chars => chars.slice(argument));
               break;
             case Operations.SPLICE:
-              textFunctions.push(chars => chars.splice(0, argument));
+              textFunctions.push(chars => {
+                chars.splice(0, argument);
+                return chars;
+              });
               break;
             case Operations.SWAP:
               textFunctions.push(chars => {
