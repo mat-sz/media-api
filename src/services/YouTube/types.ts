@@ -231,7 +231,9 @@ export interface PlaylistInitialData extends InitialData {
                                     thumbnails: Thumbnail[];
                                   };
                                   title: {
-                                    simpleText: string;
+                                    runs: {
+                                      text: string;
+                                    }[];
                                   };
                                   index: {
                                     simpleText: string;

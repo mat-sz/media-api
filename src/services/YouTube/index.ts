@@ -195,7 +195,7 @@ export class YouTube implements Service {
       },
       contents: playlistContents?.map(content => ({
         id: content.playlistVideoRenderer.videoId,
-        title: content.playlistVideoRenderer.title.simpleText,
+        title: content.playlistVideoRenderer.title.runs[0].text,
         type: ContentType.VIDEO,
         author: {
           id:
