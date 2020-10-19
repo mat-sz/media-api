@@ -316,7 +316,7 @@ export class YouTube implements Service {
   }
 
   private scrapeInitialData(body: string): InitialData {
-    const regex = /window\["ytInitialData"\]\s*=\s*(.*?);\n/;
+    const regex = /window\["ytInitialData"\]\s*=\s*(.*?);/;
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Website unavailable.');
