@@ -278,21 +278,17 @@ export class YouTube implements Service {
   }
 
   private scrapePlayerResponse(body: string): PlayerResponse {
-    const regex = /ytplayer.config\s*=\s*(.*?)};/;
+    const regex = /ytInitialPlayerResponse = \{(.*?)};/;
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Video unavailable.');
     }
 
-    const playerConfig = JSON.parse(match[1] + '}') as PlayerConfig;
+    const playerResponse = JSON.parse('{' + match[1] + '}') as PlayerResponse;
 
-    if (!playerConfig.args?.player_response) {
+    if (!playerResponse) {
       throw new Error('Video unavailable.');
     }
-
-    const playerResponse = JSON.parse(
-      playerConfig.args?.player_response
-    ) as PlayerResponse;
 
     if (playerResponse.playabilityStatus?.status !== 'OK') {
       const reason =
@@ -316,7 +312,7 @@ export class YouTube implements Service {
   }
 
   private scrapeInitialData(body: string): InitialData {
-    const regex = /window\["ytInitialData"\]\s*=\s*(.*?);/;
+    const regex = /ytInitialData = (.*?);/;
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Website unavailable.');
@@ -345,7 +341,7 @@ export class YouTube implements Service {
   }
 
   private scrapeBaseJsUrl(body: string): string {
-    const regex = /src="(.*?)"\stype="text\/javascript" name="player_ias\/base"/;
+    const regex = /"jsUrl":"(.*?)"/;
     const match = regex.exec(body);
     if (!match?.[1]) {
       throw new Error('Player unavailable.');
