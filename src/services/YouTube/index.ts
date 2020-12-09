@@ -53,7 +53,7 @@ export class YouTube implements Service {
 
     const streams: ContentStream[] = [];
     if (streamingData?.adaptiveFormats) {
-      for (let format of streamingData?.adaptiveFormats) {
+      for (const format of streamingData?.adaptiveFormats) {
         const itag = format.itag.toString();
         const fmt = itag in formats ? formats[itag] : undefined;
         let url = format.url;
@@ -278,13 +278,25 @@ export class YouTube implements Service {
   }
 
   private scrapePlayerResponse(body: string): PlayerResponse {
-    const regex = /ytInitialPlayerResponse = \{(.*?)};/;
-    const match = regex.exec(body);
-    if (!match?.[1]) {
-      throw new Error('Video unavailable.');
-    }
+    let playerResponse: PlayerResponse;
+    let match = /ytInitialPlayerResponse = \{(.*?)};/.exec(body);
+    if (match?.[1]) {
+      playerResponse = JSON.parse('{' + match[1] + '}');
+    } else {
+      match = /ytplayer.config\s*=\s*\{(.*?)};/.exec(body);
 
-    const playerResponse = JSON.parse('{' + match[1] + '}') as PlayerResponse;
+      if (!match?.[1]) {
+        throw new Error('Video unavailable.');
+      }
+
+      const playerConfig = JSON.parse(match[1] + '}') as PlayerConfig;
+
+      if (!playerConfig.args?.player_response) {
+        throw new Error('Video unavailable.');
+      }
+
+      playerResponse = JSON.parse(playerConfig.args?.player_response);
+    }
 
     if (!playerResponse) {
       throw new Error('Video unavailable.');
@@ -312,10 +324,13 @@ export class YouTube implements Service {
   }
 
   private scrapeInitialData(body: string): InitialData {
-    const regex = /ytInitialData = (.*?);/;
-    const match = regex.exec(body);
+    let match = /ytInitialData = (.*?);/.exec(body);
     if (!match?.[1]) {
-      throw new Error('Website unavailable.');
+      match = /window\["ytInitialData"\]\s*=\s*(.*?);/.exec(body);
+
+      if (!match?.[1]) {
+        throw new Error('Website unavailable.');
+      }
     }
 
     const initialData = JSON.parse(match[1]) as InitialData;
@@ -341,10 +356,15 @@ export class YouTube implements Service {
   }
 
   private scrapeBaseJsUrl(body: string): string {
-    const regex = /"jsUrl":"(.*?)"/;
-    const match = regex.exec(body);
+    let match = /"jsUrl":"(.*?)"/.exec(body);
     if (!match?.[1]) {
-      throw new Error('Player unavailable.');
+      match = /src="(.*?)"\stype="text\/javascript" name="player_ias\/base"/.exec(
+        body
+      );
+
+      if (!match?.[1]) {
+        throw new Error('Player unavailable.');
+      }
     }
 
     return match[1];
@@ -387,7 +407,7 @@ export class YouTube implements Service {
       if (call.length > 0 && call.startsWith(objectName + '.')) {
         const operationName = call.replace(objectName + '.', '').split('(')[0];
         const commaSplit = call.split(',');
-        let operationArgument: string = '0';
+        let operationArgument = '0';
         if (commaSplit.length > 1) {
           operationArgument = commaSplit[1].split(')')[0];
         }
