@@ -47,8 +47,8 @@ All classes implement the `Service` interface:
 ```ts
 export interface Service {
   content(id: string): Promise<Content>;
-  playlist(id: string): Promise<Playlist>;
-  search(id: string): Promise<SearchResults>;
+  playlist?(id: string): Promise<Playlist>;
+  search?(text: string): Promise<SearchResults>;
 }
 ```
 

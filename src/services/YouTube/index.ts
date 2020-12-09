@@ -209,10 +209,10 @@ export class YouTube implements Service {
     };
   }
 
-  async search(id: string): Promise<SearchResults> {
+  async search(text: string): Promise<SearchResults> {
     const res = await this.fetch(
       `results?search_query=${encodeURIComponent(
-        id
+        text
       )}&sp=EgIQAQ%253D%253D&gl=US&hl=en&has_verified=1&bpctr=9999999999`
     );
 

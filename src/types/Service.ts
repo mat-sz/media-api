@@ -5,5 +5,5 @@ import { SearchResults } from './SearchResults';
 export interface Service {
   content(id: string): Promise<Content>;
   playlist?(id: string): Promise<Playlist>;
-  search?(id: string): Promise<SearchResults>;
+  search?(text: string): Promise<SearchResults>;
 }
