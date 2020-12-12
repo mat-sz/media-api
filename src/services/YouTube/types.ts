@@ -199,7 +199,6 @@ export interface VideoInitialData extends InitialData {
                 }
               ];
             };
-            compactRadioRenderer?: {};
             compactVideoRenderer?: CompactVideoRenderer;
           }[];
         };
@@ -290,7 +289,7 @@ export interface PlaylistInitialData extends InitialData {
     playlistSidebarRenderer?: {
       items?: [
         {
-          playlistSidebarPrimaryInfoRenderer?: {};
+          playlistSidebarPrimaryInfoRenderer?: any;
         },
         {
           playlistSidebarSecondaryInfoRenderer?: {
@@ -333,6 +332,9 @@ export interface SearchInitialData {
                       runs?: {
                         text?: string;
                       }[];
+                    };
+                    lengthText: {
+                      simpleText: string;
                     };
                     longBylineText?: LongBylineText;
                     thumbnail?: { thumbnails: Thumbnail[] };

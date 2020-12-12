@@ -240,6 +240,9 @@ export class YouTube implements Service {
         type: ContentType.VIDEO,
         thumbnails: content.videoRenderer.thumbnail?.thumbnails,
         url: 'https://www.youtube.com/watch?v=' + content.videoRenderer.videoId,
+        duration: this.lengthTextToSeconds(
+          content.videoRenderer.lengthText.simpleText
+        ),
         author: content.videoRenderer.longBylineText?.runs[0]
           ? {
               id:
@@ -250,6 +253,21 @@ export class YouTube implements Service {
           : undefined,
       })),
     };
+  }
+
+  private lengthTextToSeconds(text: string): number {
+    const split = text.split(':');
+
+    if (split.length === 0) {
+      return 0;
+    }
+
+    return (
+      parseInt(split[split.length - 4] || '0') * 24 * 60 * 60 +
+      parseInt(split[split.length - 3] || '0') * 60 * 60 +
+      parseInt(split[split.length - 2] || '0') * 60 +
+      parseInt(split[split.length - 1])
+    );
   }
 
   private fetch(url: string, init?: RequestInit): Promise<Response> {
