@@ -8,6 +8,7 @@ describe('YouTube', () => {
     expect(content.type).toBe(ContentType.VIDEO);
     expect(content.title).toBe('Me at the zoo');
     expect(content.id).toBe('jNQXAC9IVRw');
+    expect(content.url).toBe('https://www.youtube.com/watch?v=jNQXAC9IVRw');
     expect(content.duration).toBe(19);
     expect(content.keywords).toContain('me at the zoo');
     expect(content.description).toContain('The first video on YouTube.');
@@ -74,6 +75,7 @@ describe('YouTube', () => {
     );
     expect(content.id).toBe('N0m1XmvBey8');
     expect(content.duration).toBe(114);
+    expect(content.url).toBe('https://www.youtube.com/watch?v=N0m1XmvBey8');
 
     expect(content.author?.id).toBe('UCi4zXLLK0aXhz2ZLhgkdNvA');
     expect(content.author?.name).toBe('sh');
@@ -95,6 +97,7 @@ describe('YouTube', () => {
     expect(content.type).toBe(ContentType.VIDEO);
     expect(content.title).toBe('Me at the zoo');
     expect(content.id).toBe('jNQXAC9IVRw');
+    expect(content.url).toBe('https://www.youtube.com/watch?v=jNQXAC9IVRw');
     expect(content.duration).toBe(19);
 
     expect(content.author?.id).toBe('UC4QobU6STFB0P71PMvOGN5A');
