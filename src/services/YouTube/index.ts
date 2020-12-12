@@ -330,16 +330,16 @@ export class YouTube implements Service {
   }
 
   private scrapeInitialData(body: string): InitialData {
-    let match = /ytInitialData = (.*?);/.exec(body);
+    let match = /ytInitialData = (.*?)\};/.exec(body);
     if (!match?.[1]) {
-      match = /window\["ytInitialData"\]\s*=\s*(.*?);/.exec(body);
+      match = /window\["ytInitialData"\]\s*=\s*(.*?)\};/.exec(body);
 
       if (!match?.[1]) {
         throw new Error('Website unavailable.');
       }
     }
 
-    const initialData = JSON.parse(match[1]) as InitialData;
+    const initialData = JSON.parse(match[1] + '}') as InitialData;
 
     if (!initialData) {
       throw new Error('Website unavailable.');
