@@ -119,6 +119,7 @@ export class YouTube implements Service {
             ?.compactVideoRenderer;
         related.push({
           id: renderer.videoId,
+          url: 'https://www.youtube.com/watch?v=' + renderer.videoId,
           title: renderer.title.simpleText,
           type: renderer.badges ? ContentType.LIVE_STREAM : ContentType.VIDEO,
           author: {
@@ -134,6 +135,7 @@ export class YouTube implements Service {
     return {
       type: ContentType.VIDEO,
       id: id,
+      url: 'https://www.youtube.com/watch?v=' + id,
       title: videoDetails.title,
       author: {
         id: videoDetails.channelId,
@@ -195,6 +197,9 @@ export class YouTube implements Service {
       },
       contents: playlistContents?.map(content => ({
         id: content.playlistVideoRenderer.videoId,
+        url:
+          'https://www.youtube.com/watch?v=' +
+          content.playlistVideoRenderer.videoId,
         title: content.playlistVideoRenderer.title.runs[0].text,
         type: ContentType.VIDEO,
         author: {
@@ -234,6 +239,7 @@ export class YouTube implements Service {
         title: content.videoRenderer.title?.runs?.[0]?.text || '',
         type: ContentType.VIDEO,
         thumbnails: content.videoRenderer.thumbnail?.thumbnails,
+        url: 'https://www.youtube.com/watch?v=' + content.videoRenderer.videoId,
         author: content.videoRenderer.longBylineText?.runs[0]
           ? {
               id:

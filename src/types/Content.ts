@@ -42,4 +42,5 @@ export interface Content {
   author?: Author;
   date?: Date;
   related?: Content[];
+  url: string;
 }

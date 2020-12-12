@@ -121,6 +121,7 @@ export class SoundCloud implements Service {
     const track = this.scrapeTrack(body);
 
     return {
+      url: 'https://soundcloud.com/' + id,
       type: ContentType.AUDIO,
       id: track.id.toString(),
       title: track.title,
