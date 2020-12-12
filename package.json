@@ -1,6 +1,6 @@
 {
   "name": "media-api",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Unofficial API for multimedia websites.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
