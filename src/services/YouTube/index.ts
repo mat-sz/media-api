@@ -195,22 +195,24 @@ export class YouTube implements Service {
         name: titleRun.text,
         thumbnails: videoOwnerRenderer.thumbnail?.thumbnails,
       },
-      contents: playlistContents?.map(content => ({
-        id: content.playlistVideoRenderer.videoId,
-        url:
-          'https://www.youtube.com/watch?v=' +
-          content.playlistVideoRenderer.videoId,
-        title: content.playlistVideoRenderer.title.runs[0].text,
-        type: ContentType.VIDEO,
-        author: {
-          id:
-            content.playlistVideoRenderer.shortBylineText.runs[0]
-              .navigationEndpoint.browseEndpoint.browseId,
-          name: content.playlistVideoRenderer.shortBylineText.runs[0].text,
-        },
-        thumbnails: content.playlistVideoRenderer.thumbnail.thumbnails,
-        duration: parseInt(content.playlistVideoRenderer.lengthSeconds),
-      })),
+      contents: playlistContents
+        ?.filter(content => !!content.playlistVideoRenderer)
+        .map(content => ({
+          id: content.playlistVideoRenderer.videoId,
+          url:
+            'https://www.youtube.com/watch?v=' +
+            content.playlistVideoRenderer.videoId,
+          title: content.playlistVideoRenderer.title.runs[0].text,
+          type: ContentType.VIDEO,
+          author: {
+            id:
+              content.playlistVideoRenderer.shortBylineText.runs[0]
+                .navigationEndpoint.browseEndpoint.browseId,
+            name: content.playlistVideoRenderer.shortBylineText.runs[0].text,
+          },
+          thumbnails: content.playlistVideoRenderer.thumbnail.thumbnails,
+          duration: parseInt(content.playlistVideoRenderer.lengthSeconds),
+        })),
     };
   }
 
@@ -234,24 +236,27 @@ export class YouTube implements Service {
     }
 
     return {
-      contents: searchContents?.map(content => ({
-        id: content.videoRenderer.videoId,
-        title: content.videoRenderer.title?.runs?.[0]?.text || '',
-        type: ContentType.VIDEO,
-        thumbnails: content.videoRenderer.thumbnail?.thumbnails,
-        url: 'https://www.youtube.com/watch?v=' + content.videoRenderer.videoId,
-        duration: this.lengthTextToSeconds(
-          content.videoRenderer.lengthText.simpleText
-        ),
-        author: content.videoRenderer.longBylineText?.runs[0]
-          ? {
-              id:
-                content.videoRenderer.longBylineText?.runs[0].navigationEndpoint
-                  .browseEndpoint.browseId,
-              name: content.videoRenderer.longBylineText?.runs[0].text,
-            }
-          : undefined,
-      })),
+      contents: searchContents
+        ?.filter(content => !!content.videoRenderer)
+        .map(content => ({
+          id: content.videoRenderer.videoId,
+          title: content.videoRenderer.title?.runs?.[0]?.text || '',
+          type: ContentType.VIDEO,
+          thumbnails: content.videoRenderer.thumbnail?.thumbnails,
+          url:
+            'https://www.youtube.com/watch?v=' + content.videoRenderer.videoId,
+          duration: this.lengthTextToSeconds(
+            content.videoRenderer.lengthText.simpleText
+          ),
+          author: content.videoRenderer.longBylineText?.runs[0]
+            ? {
+                id:
+                  content.videoRenderer.longBylineText?.runs[0]
+                    .navigationEndpoint.browseEndpoint.browseId,
+                name: content.videoRenderer.longBylineText?.runs[0].text,
+              }
+            : undefined,
+        })),
     };
   }
 
